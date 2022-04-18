@@ -8,6 +8,7 @@ from collections import Counter
 
 #load data
 df_r = pd.read_csv("./wineData/winequality-red.csv", sep = ';')
+df_r.drop(['residual sugar', 'chlorides', 'density', 'pH'], axis = 1)
 data_r = df_r.values
 
 #Oversample the rare labels
@@ -42,12 +43,14 @@ def predict():
     good_wine_data = data_r[all_quality_scores>=8]
     #construct dict
     statistics = dict({
-        'User input data': data,
-        'Predcited quality score': prediction,
+        'User input data': data, #np.array with dimension of 1: np.array([.....])
+        'Predcited quality score': prediction, #an integer value
         'All quality scores frequency table': quality_freq_tabel,
-        'The rank of the wine among the dataset': quality_rank,
+        'The rank of the wine among the dataset': quality_rank, #a dictionary{7: 13; 8: 20....}
+        # np.array with dimension of 1: np.array([.....]), 11 values corresponding to 11 features
         'Feature importance': feature_importance,
         'Feature importance std': feature_importance_std,
+        #np.array (n by 12 columns, including the quality score) of all the data points with a score >= 8
         'High quality wine data': good_wine_data,
     })
     
