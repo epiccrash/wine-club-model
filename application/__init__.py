@@ -8,7 +8,7 @@ from collections import Counter
 
 #load data
 df_r = pd.read_csv("./wineData/winequality-red.csv", sep = ';')
-df_r.drop(['residual sugar', 'chlorides', 'density', 'pH'], axis = 1)
+df_r.drop(['residual sugar', 'chlorides', 'density', 'pH'], axis = 1, inplace = True)
 data_r = df_r.values
 
 #Oversample the rare labels
@@ -28,7 +28,9 @@ app = Flask(__name__)
 def predict():
     #get data from request
     data = request.get_json(force=True)
-    data = data.values
+    data = np.array([data["fixedAcidity"], data["volatileAcidity"], data["citricAcid"], data["freeSulfurDioxide"], data["totalSulfurDioxide"], data["sulfates"], data["alcohol"]])
+    data = np.reshape(data, (1, -1))
+    # data = data.values
     #make predicon using model
     all_quality_scores = data_r[:, -1]
     prediction = RF.predict(data)
@@ -43,15 +45,15 @@ def predict():
     good_wine_data = data_r[all_quality_scores>=8]
     #construct dict
     statistics = dict({
-        'User input data': data, #np.array with dimension of 1: np.array([.....])
-        'Predcited quality score': prediction, #an integer value
-        'All quality scores frequency table': quality_freq_tabel,
-        'The rank of the wine among the dataset': quality_rank, #a dictionary{7: 13; 8: 20....}
+        # 'User input data': data, #np.array with dimension of 1: np.array([.....])
+        'qualityScore': prediction, #an integer value
+        'allQualityScoresFreq': quality_freq_tabel,
+        'qualityRank': quality_rank, #a dictionary{7: 13; 8: 20....}
         # np.array with dimension of 1: np.array([.....]), 11 values corresponding to 11 features
-        'Feature importance': feature_importance,
-        'Feature importance std': feature_importance_std,
+        'featureImportance': feature_importance.tolist(),
+        'featureImportanceStd': feature_importance_std.tolist(),
         #np.array (n by 12 columns, including the quality score) of all the data points with a score >= 8
-        'High quality wine data': good_wine_data,
+        'highQualityWineData': good_wine_data.tolist(),
     })
     
     return Response(json.dumps(statistics))
