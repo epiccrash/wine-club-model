@@ -20,6 +20,9 @@ X_res, y_res = OverSample_random.fit_resample(data_r[:,:-1], data_r[:,-1])
 RF = RandomForestClassifier(n_estimators=500)
 RF.fit(X_res, y_res)
 
+#temp dataset
+temperary_dataset = []
+
 #create flask instance
 app = Flask(__name__)
 
@@ -59,13 +62,14 @@ def predict():
     return Response(json.dumps(statistics))
 
 
-temperary_dataset = []
 @app.route('/api/getDonatedData', methods=['GET', 'POST'])
 def donate_model():
+    global temperary_dataset
     donated_data = request.get_json(force=True)
-    donated_data = donated_data.values.tolist()
+    # donated_data = donated_data.values.tolist()
     temperary_dataset.append(donated_data)
     if len(temperary_dataset) > 10:
         data_r = np.append(data_r, np.array(temperary_dataset), axis = 0)
         temperary_dataset = []
         RF.fit(data_r)
+    return Response("Data successfully submitted. Thank you for contributing!")
